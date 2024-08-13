@@ -1,6 +1,8 @@
 package com.github.Ringoame196
 
 import com.github.Ringoame196.managers.YmlFileManager
+import net.md_5.bungee.api.ChatMessageType
+import net.md_5.bungee.api.chat.TextComponent
 import org.bukkit.Bukkit
 import org.bukkit.ChatColor
 import org.bukkit.Location
@@ -20,6 +22,7 @@ class AthleticManager(private val plugin: Plugin) {
     private val setupBlockListKey = "setupBlockList"
     private val startWorldName = "start_world_name"
     private val startLocationKey = "start_location"
+    private val countKey = "count"
 
     private fun acquisitionPlayerData(player: Player): File {
         val file = File(plugin.dataFolder, "/playerData/${player.name}.yml")
@@ -72,8 +75,9 @@ class AthleticManager(private val plugin: Plugin) {
         if (!isRun(player)) {
             player.sendMessage("${ChatColor.RED}スタートしていません")
         } else {
-            player.sendMessage("${ChatColor.GOLD}アスレチック終了")
             val playerDataFile = acquisitionPlayerData(player)
+            val count = ymlFileManager.acquisitionIntValue(playerDataFile, countKey)
+            player.sendMessage("${ChatColor.GOLD}アスレチック終了\nあなたは ${count}回まで進みました")
             returnStartLocation(player) // スタート位置に戻る
             cleanBlocks(player) // ブロックをきれいにする
             ymlFileManager.delete(playerDataFile) // データファイルを削除する
@@ -104,6 +108,8 @@ class AthleticManager(private val plugin: Plugin) {
 
         saveBlockLocation(player, setupBlockLocation) // ブロックの座標を保存する
 
+        val count = additionCount(player)
+
         if (randomY <= 1) {
             parquetManager.setBlock(Material.STONE, setupBlockLocation, player)
         } else {
@@ -113,7 +119,7 @@ class AthleticManager(private val plugin: Plugin) {
         }
 
         val particleLocation = setupBlockLocation.clone().add(0.5, 0.0, 0.5)
-        staging(player, particleLocation)
+        staging(player, particleLocation, count)
     }
 
     private fun saveBlockLocation(player: Player, location: Location) {
@@ -127,9 +133,10 @@ class AthleticManager(private val plugin: Plugin) {
         ymlFileManager.addList(playerDataFile, setupBlockListKey, listBlockLocation)
     }
 
-    private fun staging(player: Player, location: Location) {
+    private fun staging(player: Player, location: Location, count: Int) {
         player.playSound(player, Sound.UI_BUTTON_CLICK, 1f, 1f) // 音を流す
         player.world.spawnParticle(Particle.HEART, location, 1) // パーティクルを表示
+        player.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent("${ChatColor.GOLD}$count"))
     }
 
     private fun cleanBlocks(player: Player) {
@@ -167,5 +174,12 @@ class AthleticManager(private val plugin: Plugin) {
         ymlFileManager.setValue(playerDataFile, "$key.x", x)
         ymlFileManager.setValue(playerDataFile, "$key.y", y)
         ymlFileManager.setValue(playerDataFile, "$key.z", z)
+    }
+
+    private fun additionCount(player: Player): Int {
+        val playerDataFile = acquisitionPlayerData(player)
+        val count = ymlFileManager.acquisitionIntValue(playerDataFile, countKey) + 1
+        ymlFileManager.setValue(playerDataFile, countKey, count)
+        return count
     }
 }
