@@ -30,7 +30,6 @@ open class SetupTask : DefaultTask() {
             """
                 package $groupId
 
-                import ${groupId}.commands.TabCompleter
                 import org.bukkit.plugin.java.JavaPlugin
 
                 class Main : JavaPlugin() {
@@ -77,7 +76,7 @@ open class SetupTask : DefaultTask() {
             """.trimIndent()
         )
         
-        commandDir.resolve("Command.kt").writeText(
+        commandDir.resolve("TabCompleter.kt").writeText(
             """
                 package $groupId
                 

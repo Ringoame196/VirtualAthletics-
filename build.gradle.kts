@@ -4,7 +4,6 @@ import dev.s7a.gradle.minecraft.server.tasks.LaunchMinecraftServerTask.JarUrl
 import groovy.lang.Closure
 import net.minecrell.pluginyml.bukkit.BukkitPluginDescription
 import java.net.HttpURLConnection
-import java.net.ConnectException
 import java.net.URL
 
 plugins {
@@ -25,6 +24,7 @@ repositories {
     mavenCentral()
     maven(url = "https://hub.spigotmc.org/nexus/content/repositories/snapshots/")
     maven(url = "https://oss.sonatype.org/content/groups/public/")
+    maven(url = "https://repo.dmulloy2.net/repository/public/")
 }
 
 val shadowImplementation: Configuration by configurations.creating
@@ -33,31 +33,29 @@ configurations["implementation"].extendsFrom(shadowImplementation)
 dependencies {
     shadowImplementation(kotlin("stdlib"))
     compileOnly("org.spigotmc:spigot-api:$pluginVersion-R0.1-SNAPSHOT")
+    compileOnly("com.comphenix.protocol:ProtocolLib:5.1.0")
 }
 
 configure<BukkitPluginDescription> {
-    main = "@group@.Main"
+    main = "com.github.Ringoame196.Main"
     version = gitVersion()
     apiVersion = "1." + pluginVersion.split(".")[1]
-    /*
-    コマンド追加用
     commands {
-        register("test") {
-        description = "This is a test command!"
-        aliases = listOf("t")
-        permission = "testplugin.test"
-        usage = "Just run the command!"
+        register("virtualathletic") {
+            description = "アスレチックをスタート・ストップするコマンド"
+            usage = "/virtualathletic <start,stop>"
         }
     }
-    */
+
+    depend = listOf("ProtocolLib")
 }
 
 tasks.withType<ShadowJar> {
     configurations = listOf(shadowImplementation)
     archiveClassifier.set("")
-    relocate("kotlin", "@group@.libs.kotlin")
-    relocate("org.intellij.lang.annotations", "@group@.libs.org.intellij.lang.annotations")
-    relocate("org.jetbrains.annotations", "@group@.libs.org.jetbrains.annotations")
+    relocate("kotlin", "com.github.Ringoame196.libs.kotlin")
+    relocate("org.intellij.lang.annotations", "com.github.Ringoame196.libs.org.intellij.lang.annotations")
+    relocate("org.jetbrains.annotations", "com.github.Ringoame196.libs.org.jetbrains.annotations")
 }
 
 tasks.named("build") {
@@ -90,8 +88,6 @@ tasks.named("build") {
                 } else {
                     println("Failed to get response: ${connection.responseCode}")
                 }
-            } catch (e:ConnectException) {
-                println("Could not connect to reload destination server: ${e.message}")
             } catch (e: Exception) {
                 e.printStackTrace()
                 println("Error during API request: ${e.message}")
