@@ -46,7 +46,6 @@ configure<BukkitPluginDescription> {
             usage = "/virtualathletic <start,stop>"
         }
     }
-
     depend = listOf("ProtocolLib")
 }
 
